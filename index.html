@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1A2E1B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vaidya">
+<meta name="description" content="Your personal Ayurvedic daily companion - fully offline">
+<link rel="manifest" href="manifest.json">
+<title>Vaidya — Ayurvedic Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest: #1A2E1B;
+  --forest2: #243526;
+  --forest3: #2E4230;
+  --leaf: #4A7C4E;
+  --leaf2: #6A9E6E;
+  --mint: #A8D4AA;
+  --gold: #C8922A;
+  --gold2: #E8C060;
+  --gold-dim: rgba(200,146,42,0.15);
+  --copper: #B5621A;
+  --saffron: #E8940A;
+  --cream: #F5EFE0;
+  --cream2: #EDE5D0;
+  --paper: #FAF6EE;
+  --text: #F0EAD8;
+  --text2: #B8B098;
+  --text3: #706858;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --card: rgba(255,255,255,0.05);
+  --card2: rgba(255,255,255,0.09);
+  --danger: #D4624A;
+  --pitta: #E08040;
+  --kapha: #5A90C0;
+  --vata: #9A70C0;
+  --safe: #5A9A5C;
+  --r: 12px;
+  --r2: 16px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--forest);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+}
+
+/* ── APP SHELL ── */
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── SCROLL CONTENT ── */
+.scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 80px;
+}
+
+.scroll-content::-webkit-scrollbar { display: none; }
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--forest2);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.topbar-title {
+  font-family: 'Cormorant', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.topbar-title em { color: var(--gold2); font-style: italic; }
+
+.topbar-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 1px;
+  letter-spacing: 0.3px;
+}
+
+.topbar-right { text-align: right; }
+
+.time-display {
+  font-family: 'Cormorant', serif;
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--gold2);
+  line-height: 1;
+}
+
+.date-display {
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--forest2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px 8px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: background 0.2s;
+  gap: 4px;
+}
+
+.nav-btn:active { background: var(--card); }
+
+.nav-icon { font-size: 20px; line-height: 1; }
+
+.nav-label {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--text3);
+  transition: color 0.2s;
+}
+
+.nav-btn.active .nav-label { color: var(--gold2); }
+.nav-btn.active .nav-icon { filter: brightness(1.4); }
+
+/* ── COMMON COMPONENTS ── */
+.section-head {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  padding: 20px 20px 10px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  margin: 0 16px 12px;
+  overflow: hidden;
+}
+
+.card-inner { padding: 16px; }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.pill-p { background: rgba(224,128,64,0.2); color: var(--pitta); }
+.pill-k { background: rgba(90,144,192,0.2); color: var(--kapha); }
+.pill-v { background: rgba(154,112,192,0.2); color: var(--vata); }
+.pill-g { background: rgba(90,154,92,0.2); color: var(--safe); }
+
+/* ── DOSHA METER ── */
+.dosha-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dosha-label {
+  width: 52px;
+  font-size: 11px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.dosha-track {
+  flex: 1;
+  height: 6px;
+  background: var(--border2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dosha-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+
+.fill-p { background: linear-gradient(90deg, var(--pitta), #F0A060); }
+.fill-k { background: linear-gradient(90deg, var(--kapha), #7AB0D8); }
+.fill-v { background: linear-gradient(90deg, var(--vata), #B898D8); }
+
+.dosha-pct {
+  width: 32px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+/* ── HOME SCREEN ── */
+.hero-banner {
+  background: linear-gradient(135deg, var(--forest3) 0%, var(--forest2) 100%);
+  margin: 12px 16px;
+  border-radius: var(--r2);
+  border: 1px solid var(--border2);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-banner::before {
+  content: '✦';
+  position: absolute;
+  right: 20px; top: 16px;
+  font-size: 40px;
+  color: var(--gold);
+  opacity: 0.15;
+}
+
+.hero-greeting {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.hero-title {
+  font-family: 'Cormorant', serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--cream);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.hero-sub {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.constitution-strip {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+/* ── NEXT ACTION CARD ── */
+.next-action {
+  background: var(--gold-dim);
+  border: 1px solid rgba(200,146,42,0.25);
+  border-radius: var(--r);
+  margin: 0 16px 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.next-action-icon { font-size: 26px; flex-shrink: 0; }
+
+.next-action-text h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold2);
+  margin-bottom: 2px;
+}
+
+.next-action-text p {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+/* ── ROUTINE TIMELINE ── */
+.routine-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+  align-items: flex-start;
+}
+
+.routine-item:last-child { border-bottom: none; }
+.routine-item:active { background: var(--card2); }
+
+.routine-item.done { opacity: 0.5; }
+.routine-item.done .routine-title { text-decoration: line-through; }
+
+.routine-time {
+  font-size: 10px;
+  color: var(--text3);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  width: 46px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.routine-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+  border: 2px solid;
+}
+
+.routine-dot.done-dot { background: var(--safe); border-color: var(--safe); }
+.routine-dot.pending-dot { border-color: var(--text3); background: transparent; }
+.routine-dot.active-dot { border-color: var(--gold); background: var(--gold); box-shadow: 0 0 6px rgba(200,146,42,0.6); }
+
+.routine-body { flex: 1; }
+
+.routine-title {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.routine-desc {
+  font-size: 11.5px;
+  color: var(--text3);
+  line-height: 1.5;
+}
+
+.routine-check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.routine-check.checked {
+  background: var(--safe);
+  border-color: var(--safe);
+}
+
+/* ── MEAL SCREEN ── */
+.meal-day-nav {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  overflow-x: auto;
+}
+
+.meal-day-nav::-webkit-scrollbar { display: none; }
+
+.day-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border2);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text2);
+}
+
+.day-chip.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--forest);
+  font-weight: 600;
+}
+
+.meal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  margin: 0 16px 12px;
+  overflow: hidden;
+}
+
+.meal-header {
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.meal-time-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  font-weight: 600;
+}
+
+.meal-name {
+  font-family: 'Cormorant', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--cream);
+  padding: 10px 16px 4px;
+}
+
+.meal-items {
+  padding: 0 16px 14px;
+  list-style: none;
+}
+
+.meal-items li {
+  font-size: 12.5px;
+  color: var(--text2);
+  padding: 3px 0 3px 14px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.meal-items li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--text3);
+  font-size: 10px;
+  top: 5px;
+}
+
+.meal-note {
+  font-size: 11px;
+  color: var(--gold);
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  font-style: italic;
+}
+
+/* ── TRACKER SCREEN ── */
+.tracker-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 16px 12px;
+}
+
+.tracker-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.tracker-card:active { border-color: var(--border2); }
+
+.tracker-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+.tracker-label { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.tracker-value { font-family: 'Cormorant', serif; font-size: 22px; font-weight: 600; color: var(--gold2); }
+.tracker-unit { font-size: 10px; color: var(--text3); }
+
+.log-btn {
+  background: var(--forest3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin: 0 16px 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.log-btn:active { background: var(--card2); }
+
+.log-btn-icon { font-size: 22px; }
+.log-btn-text { flex: 1; }
+.log-btn-title { font-size: 13px; font-weight: 500; color: var(--text); }
+.log-btn-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.log-btn-arrow { color: var(--text3); font-size: 16px; }
+
+/* ── SYMPTOMS LOG MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-sheet {
+  background: var(--forest2);
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border2);
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.modal-overlay.open .modal-sheet {
+  transform: translateY(0);
+}
+
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 12px auto 8px;
+}
+
+.modal-title {
+  font-family: 'Cormorant', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cream);
+  padding: 8px 20px 16px;
+}
+
+.symptom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+
+.symptom-chip {
+  padding: 10px 12px;
+  border-radius: var(--r);
+  border: 1px solid var(--border2);
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.symptom-chip.selected {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+
+.modal-save-btn {
+  margin: 8px 16px 16px;
+  background: var(--gold);
+  color: var(--forest);
+  border: none;
+  border-radius: var(--r);
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  width: calc(100% - 32px);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── KNOWLEDGE SCREEN ── */
+.know-section {
+  margin: 0 16px 12px;
+}
+
+.know-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.know-item-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.know-item-header:active { background: var(--card2); }
+
+.know-icon { font-size: 20px; flex-shrink: 0; }
+.know-title { flex: 1; font-size: 13.5px; font-weight: 500; color: var(--text); }
+.know-arrow { color: var(--text3); font-size: 14px; transition: transform 0.2s; }
+.know-item.open .know-arrow { transform: rotate(180deg); }
+
+.know-body {
+  display: none;
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.know-item.open .know-body { display: block; }
+
+.know-body p {
+  font-size: 12.5px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-top: 10px;
+}
+
+.know-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.know-body th {
+  background: var(--forest3);
+  color: var(--text2);
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.know-body td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  vertical-align: top;
+}
+
+/* ── PRAKRITI ASSESSMENT ── */
+.assessment-screen {
+  background: var(--forest);
+}
+
+.assessment-progress {
+  height: 3px;
+  background: var(--border);
+  position: relative;
+}
+
+.assessment-progress-fill {
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.4s ease;
+}
+
+.assessment-question {
+  padding: 28px 20px 16px;
+}
+
+.q-number {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.q-text {
+  font-family: 'Cormorant', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cream);
+  line-height: 1.3;
+}
+
+.q-category {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.q-options {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.q-option {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.q-option:active { background: var(--card2); }
+
+.q-option.selected {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+}
+
+.q-option-letter {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--forest3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  flex-shrink: 0;
+  border: 1px solid var(--border2);
+}
+
+.q-option.selected .q-option-letter {
+  background: var(--gold);
+  color: var(--forest);
+  border-color: var(--gold);
+}
+
+.q-option-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.q-option-dosha {
+  font-size: 10px;
+  color: var(--text3);
+  font-weight: 500;
+}
+
+.q-nav {
+  display: flex;
+  gap: 10px;
+  padding: 16px;
+  margin-top: auto;
+}
+
+.q-back-btn, .q-next-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--r);
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.q-back-btn {
+  background: var(--forest3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+
+.q-next-btn {
+  background: var(--gold);
+  color: var(--forest);
+}
+
+.q-next-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── SETTINGS ── */
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.settings-item:last-child { border-bottom: none; }
+
+.settings-icon { font-size: 20px; width: 28px; text-align: center; }
+.settings-label { flex: 1; font-size: 13.5px; font-weight: 500; color: var(--text); }
+.settings-value { font-size: 12px; color: var(--text3); }
+.settings-arrow { color: var(--text3); font-size: 14px; }
+
+/* Toggle */
+.toggle {
+  width: 44px; height: 24px;
+  border-radius: 12px;
+  background: var(--border2);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle.on { background: var(--gold); }
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: white;
+  top: 3px; left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.toggle.on::after { transform: translateX(20px); }
+
+/* ── RESULTS SCREEN ── */
+.result-hero {
+  background: linear-gradient(135deg, var(--forest3), var(--forest2));
+  margin: 12px 16px;
+  border-radius: var(--r2);
+  border: 1px solid var(--border2);
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.result-constitution {
+  font-family: 'Cormorant', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gold2);
+  margin-bottom: 6px;
+}
+
+.result-sub {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+/* ── NOTIFICATION BANNER ── */
+.notif-banner {
+  position: fixed;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: min(430px, 100%);
+  background: var(--forest3);
+  border-bottom: 1px solid var(--gold);
+  padding: 14px 20px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  transform: translateX(-50%) translateY(-100%);
+}
+
+.notif-banner.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.notif-icon { font-size: 20px; }
+.notif-text { flex: 1; }
+.notif-title { font-size: 13px; font-weight: 600; color: var(--gold2); }
+.notif-desc { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.notif-close { font-size: 18px; color: var(--text3); cursor: pointer; padding: 4px; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.animate-in { animation: fadeUp 0.4s ease both; }
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }
+</style>
+</head>
+<body>
+
+<!-- NOTIFICATION BANNER -->
+<div class="notif-banner" id="notifBanner">
+  <div class="notif-icon" id="notifIcon">🌅</div>
+  <div class="notif-text">
+    <div class="notif-title" id="notifTitle">Reminder</div>
+    <div class="notif-desc" id="notifDesc"></div>
+  </div>
+  <div class="notif-close" onclick="closeNotif()">✕</div>
+</div>
+
+<div id="app">
+
+  <!-- ══════════════════════════════════ HOME SCREEN ══ -->
+  <div class="screen active" id="screen-home">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Vaidya <em>✦</em></div>
+        <div class="topbar-sub" id="home-greeting">Good morning</div>
+      </div>
+      <div class="topbar-right">
+        <div class="time-display" id="clock">6:00</div>
+        <div class="date-display" id="date-display">Today</div>
+      </div>
+    </div>
+
+    <div class="scroll-content">
+      <!-- Hero -->
+      <div class="hero-banner animate-in stagger-1">
+        <div class="hero-greeting" id="hero-greeting-text">Your daily plan is ready</div>
+        <div class="hero-title" id="hero-phase-title">Morning Routine</div>
+        <div class="hero-sub" id="hero-phase-sub">Begin with fennel water and amla to set your dosha balance for the day.</div>
+        <div class="constitution-strip" id="constitution-pills"></div>
+      </div>
+
+      <!-- Current dosha status -->
+      <div class="section-head animate-in stagger-2">Today's Dosha Balance</div>
+      <div class="card animate-in stagger-2">
+        <div class="card-inner">
+          <div class="dosha-bar-row">
+            <div class="dosha-label" style="color:var(--pitta)">Pitta</div>
+            <div class="dosha-track"><div class="dosha-fill fill-p" id="pitta-bar" style="width:0%"></div></div>
+            <div class="dosha-pct" id="pitta-pct">0%</div>
+          </div>
+          <div class="dosha-bar-row">
+            <div class="dosha-label" style="color:var(--kapha)">Kapha</div>
+            <div class="dosha-track"><div class="dosha-fill fill-k" id="kapha-bar" style="width:0%"></div></div>
+            <div class="dosha-pct" id="kapha-pct">0%</div>
+          </div>
+          <div class="dosha-bar-row">
+            <div class="dosha-label" style="color:var(--vata)">Vata</div>
+            <div class="dosha-track"><div class="dosha-fill fill-v" id="vata-bar" style="width:0%"></div></div>
+            <div class="dosha-pct" id="vata-pct">0%</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;font-style:italic;">Based on your assessment · Log symptoms to update</div>
+        </div>
+      </div>
+
+      <!-- Next action -->
+      <div class="next-action animate-in stagger-3" id="next-action-card">
+        <div class="next-action-icon" id="next-action-icon">🌿</div>
+        <div class="next-action-text">
+          <h4 id="next-action-title">Next: Amla Rasayana</h4>
+          <p id="next-action-desc">Take 1 tsp amla powder or 2 dried amla pieces on empty stomach.</p>
+        </div>
+      </div>
+
+      <!-- Today's routine -->
+      <div class="section-head animate-in stagger-3">Today's Dinacharya</div>
+      <div class="card animate-in stagger-4" id="routine-list"></div>
+
+      <!-- Quick links -->
+      <div class="section-head animate-in stagger-5">Quick Actions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 20px" class="animate-in stagger-5">
+        <div class="tracker-card" onclick="showScreen('meals')">
+          <span class="tracker-icon">🍱</span>
+          <div class="tracker-label">Today's Meals</div>
+          <div class="tracker-unit">View full plan →</div>
+        </div>
+        <div class="tracker-card" onclick="openSymptomLog()">
+          <span class="tracker-icon">📊</span>
+          <div class="tracker-label">Log Symptoms</div>
+          <div class="tracker-unit">Update dosha →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ MEALS SCREEN ══ -->
+  <div class="screen" id="screen-meals">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Meals <em>✦</em></div>
+        <div class="topbar-sub">Weekly rotation</div>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="meal-day-nav" id="meal-day-nav"></div>
+      <div id="meal-content"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ TRACKER SCREEN ══ -->
+  <div class="screen" id="screen-tracker">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Tracker <em>✦</em></div>
+        <div class="topbar-sub">Log & monitor</div>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="section-head">Today's Stats</div>
+      <div class="tracker-grid" id="tracker-stats"></div>
+
+      <div class="section-head">Log Today</div>
+      <div id="log-buttons"></div>
+
+      <div class="section-head">Dosha Trend (7 days)</div>
+      <div class="card">
+        <div class="card-inner" id="trend-display"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ KNOWLEDGE SCREEN ══ -->
+  <div class="screen" id="screen-knowledge">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Vaidya <em>Knowledge</em></div>
+        <div class="topbar-sub">AYUSH · CCRAS · NIA · Classical texts</div>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="section-head">Herbs & Rasayanas</div>
+      <div class="know-section" id="knowledge-herbs"></div>
+
+      <div class="section-head">Foods for Your Constitution</div>
+      <div class="know-section" id="knowledge-foods"></div>
+
+      <div class="section-head">Classical Diagnostics</div>
+      <div class="know-section" id="knowledge-diagnostics"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ SETTINGS SCREEN ══ -->
+  <div class="screen" id="screen-settings">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Settings <em>✦</em></div>
+        <div class="topbar-sub">Personalise & Privacy</div>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="section-head">Privacy</div>
+      <div class="card">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:18px">🔒</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text)">100% Offline — Data stays on device</span>
+          </div>
+          <p style="font-size:12px;color:var(--text3);line-height:1.6">All your health data is stored only in your browser's local storage. Nothing is sent to any server. No account required. No cloud sync.</p>
+        </div>
+        <div class="settings-item">
+          <div class="settings-icon">📤</div>
+          <div class="settings-label">Export my data</div>
+          <div class="settings-arrow" onclick="exportData()">⬇</div>
+        </div>
+        <div class="settings-item">
+          <div class="settings-icon">🗑</div>
+          <div class="settings-label">Clear all data</div>
+          <div class="settings-arrow" onclick="clearData()">→</div>
+        </div>
+      </div>
+
+      <div class="section-head">Reminders</div>
+      <div class="card" id="reminder-settings"></div>
+
+      <div class="section-head">Constitution</div>
+      <div class="card">
+        <div class="settings-item" onclick="startAssessment()">
+          <div class="settings-icon">📋</div>
+          <div class="settings-label">Retake Prakriti Assessment</div>
+          <div class="settings-arrow">→</div>
+        </div>
+        <div class="settings-item">
+          <div class="settings-icon">📖</div>
+          <div class="settings-label">Current constitution</div>
+          <div class="settings-value" id="settings-constitution">Pitta-Kapha</div>
+        </div>
+      </div>
+
+      <div class="section-head">About</div>
+      <div class="card">
+        <div class="card-inner">
+          <p style="font-size:12px;color:var(--text3);line-height:1.7">Knowledge sourced from: Charaka Samhita, Sushruta Samhita, Ashtanga Hridaya, Bhaishajya Ratnavali, Nighantu Ratnakar, Ministry of AYUSH (India), CCRAS (Central Council for Research in Ayurvedic Sciences), NIA (National Institute of Ayurveda, Jaipur), and Siddha classical texts.</p>
+          <p style="font-size:11px;color:var(--text3);margin-top:10px;font-style:italic">This app provides wellness guidance based on classical Ayurvedic principles. For medical conditions, consult a qualified Ayurvedic vaidya or physician.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ ASSESSMENT SCREEN ══ -->
+  <div class="screen" id="screen-assessment">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Prakriti <em>Assessment</em></div>
+        <div class="topbar-sub" id="assessment-subtitle">Question 1 of 20</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);cursor:pointer" onclick="showScreen('settings')">Skip</div>
+    </div>
+    <div class="assessment-progress">
+      <div class="assessment-progress-fill" id="assessment-progress-fill"></div>
+    </div>
+    <div class="scroll-content" style="padding-bottom:100px">
+      <div class="assessment-question">
+        <div class="q-number" id="q-number">Question 1 of 20</div>
+        <div class="q-text" id="q-text"></div>
+        <div class="q-category" id="q-category"></div>
+      </div>
+      <div class="q-options" id="q-options"></div>
+    </div>
+    <div class="q-nav" style="position:absolute;bottom:0;left:0;right:0;background:var(--forest2);border-top:1px solid var(--border)">
+      <button class="q-back-btn" onclick="assessPrev()">← Back</button>
+      <button class="q-next-btn" id="q-next-btn" onclick="assessNext()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ RESULT SCREEN ══ -->
+  <div class="screen" id="screen-result">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Your <em>Prakriti</em></div>
+        <div class="topbar-sub">Assessment complete</div>
+      </div>
+    </div>
+    <div class="scroll-content">
+      <div class="result-hero animate-in">
+        <div style="font-size:40px;margin-bottom:10px" id="result-emoji">🪷</div>
+        <div class="result-constitution" id="result-constitution">Pitta-Kapha</div>
+        <div class="result-sub" id="result-sub">Your constitution description will appear here.</div>
+      </div>
+      <div class="section-head">Your Dosha Balance</div>
+      <div class="card">
+        <div class="card-inner" id="result-bars"></div>
+      </div>
+      <div class="section-head">Key Recommendations</div>
+      <div class="card" id="result-recs"></div>
+      <div style="padding:16px">
+        <button class="modal-save-btn" onclick="saveAssessmentResult()">Save & Go to Dashboard →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-screen="home" onclick="showScreen('home')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn" data-screen="meals" onclick="showScreen('meals')">
+      <span class="nav-icon">🍱</span>
+      <span class="nav-label">Meals</span>
+    </button>
+    <button class="nav-btn" data-screen="tracker" onclick="showScreen('tracker')">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Track</span>
+    </button>
+    <button class="nav-btn" data-screen="knowledge" onclick="showScreen('knowledge')">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">Knowledge</span>
+    </button>
+    <button class="nav-btn" data-screen="settings" onclick="showScreen('settings')">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- SYMPTOM LOG MODAL -->
+<div class="modal-overlay" id="symptomModal" onclick="closeSymptomModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">How do you feel today?</div>
+    <div style="padding:0 16px 10px;font-size:12px;color:var(--text3)">Select all that apply — this updates your dosha balance</div>
+    <div class="symptom-grid" id="symptom-grid"></div>
+    <button class="modal-save-btn" onclick="saveSymptoms()">Save & Update Dosha Balance</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA — All local, nothing leaves device
+// ═══════════════════════════════════════════════════════
+
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const SHORT_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ── DINACHARYA (daily routine) ──
+const ROUTINE = [
+  { time:'5:30 AM', icon:'🌅', title:'Wake before Kapha hour', desc:'Rise before 6 AM. Vata hour gives calm, clear energy to start.', phase:'early' },
+  { time:'6:00 AM', icon:'💧', title:'Fennel water — first drink', desc:'Steep 1 tsp fennel overnight. Drink warm first thing. Cools Pitta, clears Kapha mucus.', phase:'early' },
+  { time:'6:10 AM', icon:'🍈', title:'Amla — daily Rasayana', desc:'1 tsp amla powder or 2 dried amla pieces on empty stomach. Your most important hair medicine.', phase:'early' },
+  { time:'6:20 AM', icon:'👃', title:'Nasya — nasal oil (4x/week)', desc:'2 drops coconut oil in each nostril. Clears blocked nose, nourishes scalp channels. Mon/Tue/Thu/Fri.', phase:'early' },
+  { time:'6:30 AM', icon:'💆', title:'Shiro Abhyanga (3x/week)', desc:'Warm coconut oil + Bhringaraj on scalp. 10–15 min massage. Sun/Wed/Sat only.', phase:'early' },
+  { time:'7:30 AM', icon:'🥘', title:'Breakfast — light & cooling', desc:'Idli with coconut chutney or ragi kozhukattai. No coffee.', phase:'morning' },
+  { time:'10:00 AM', icon:'🌱', title:'Morning snack', desc:'Soaked almonds (5) + amla candy piece, or seed mix.', phase:'morning' },
+  { time:'12:00 PM', icon:'🍱', title:'Lunch — main meal', desc:'Pitta is strongest. Make this your largest, most nourishing meal. Rice + dal + vegetable.', phase:'afternoon' },
+  { time:'4:00 PM', icon:'🍈', title:'Evening snack + drink', desc:'Ellu urundai (1) or ragi ladoo (1). Coconut water or pomegranate.', phase:'afternoon' },
+  { time:'7:00 PM', icon:'🥣', title:'Dinner — light & early', desc:'Ragi kanji with cumin, or moong dal soup. Finish by 7:30 PM.', phase:'evening' },
+  { time:'9:30 PM', icon:'🌙', title:'Bhringaraj dose + sleep prep', desc:'½ tsp Bhringaraj churna in warm water. Sleep before 10 PM.', phase:'evening' },
+];
+
+// ── MEAL PLAN ──
+const MEALS = {
+  Monday: {
+    breakfast: { name:'Idli + Coconut Chutney', items:['3–4 soft idlis','Coconut chutney with coriander','Fennel water'], note:'No sambar at breakfast — save for lunch.' },
+    lunch: { name:'Rice + Drumstick Sambar + Ash Gourd Kootu', items:['Rice + drumstick sambar (minimal chilli)','Ash gourd kootu with coconut','½ tsp ghee on rice','Warm diluted buttermilk (mor)'], note:'Drumstick = highest calcium vegetable.' },
+    snack: { name:'Cooling Seed Mix', items:['Small palmful pumpkin + sunflower seeds','Coconut water'], note:'' },
+    dinner: { name:'Ragi Kanji', items:['Ragi porridge — thin consistency','Pinch of cumin','Drop of coconut oil'], note:'Finish by 7:30 PM.' },
+  },
+  Tuesday: {
+    breakfast: { name:'Ragi Kozhukattai', items:['4–5 soft ragi kozhukattai','Coconut chutney','Amla already taken before this'], note:'Ragi has the highest plant calcium.' },
+    lunch: { name:'Rice + Moong Dal + Beetroot Poriyal', items:['Rice + moong dal with cumin, turmeric','Beetroot poriyal with coconut','Coriander-cumin rasam'], note:'Moong dal is the lightest, most cooling dal.' },
+    snack: { name:'Ellu Urundai', items:['1 sesame-jaggery ball','CCF tea'], note:'' },
+    dinner: { name:'Moong Dal Soup', items:['Moong dal with cumin, turmeric','No chilli','Warm water on side'], note:'' },
+  },
+  Wednesday: {
+    breakfast: { name:'Egg Scrambled in Coconut Oil', items:['2 eggs soft scrambled in coconut oil','Pinch of turmeric — no chilli','1 ragi roti on side'], note:'Eggs in coconut oil = Pitta-neutral protein.' },
+    lunch: { name:'Rice + Raw Banana Kuzhambu + Poriyal', items:['Rice + raw banana kuzhambu','Any green poriyal with coconut','Warm mor'], note:'Raw banana is grounding without heating.' },
+    snack: { name:'Amla Candy + Seed Mix', items:['2 amla candy pieces','Small seed mix','Pomegranate'], note:'' },
+    dinner: { name:'Ven Pongal — light', items:['Small serving ven pongal','Cumin-heavy, no pepper','Coconut chutney'], note:'' },
+  },
+  Thursday: {
+    breakfast: { name:'Idli + Coconut Chutney', items:['3–4 soft idlis','Coconut chutney with curry leaves','Coriander water to drink'], note:'Routine repetition is itself Vata-pacifying.' },
+    lunch: { name:'Light Chicken Broth + Rice', items:['Light chicken soup — cumin, coriander, turmeric','Minimal pepper, no red chilli','Plain rice on side','Cucumber slices'], note:'Broth format gives Mamsarasa benefits.' },
+    snack: { name:'Ragi Ladoo', items:['1 ragi ladoo','Coconut water'], note:'' },
+    dinner: { name:'Ragi Kanji', items:['Thin ragi porridge','Cumin','Drop coconut oil'], note:'' },
+  },
+  Friday: {
+    breakfast: { name:'Ragi Kozhukattai', items:['4–5 ragi kozhukattai','Coconut chutney'], note:'Keep light — bigger lunch ahead.' },
+    lunch: { name:'Ellu Sadam + Murungai Keerai Poriyal', items:['Sesame rice (black sesame preferred)','Drumstick leaves poriyal','Thin rasam on side'], note:'Highest Asthi Dhatu meal of the week.' },
+    snack: { name:'Ellu Urundai + Coconut Water', items:['1 ellu urundai','Coconut water'], note:'' },
+    dinner: { name:'Idli + Light Chutney', items:['2 idlis only','Thin coconut chutney'], note:'' },
+  },
+  Saturday: {
+    breakfast: { name:'Egg + Ragi Roti', items:['Soft boiled egg or coconut oil scramble','1–2 ragi rotis','Coconut chutney'], note:'Good protein day.' },
+    lunch: { name:'Goat Bone Broth + Rice', items:['Slow-cooked goat paya / bone broth','Cumin, coriander, turmeric — minimal pepper','Rice on side','No dry fry — broth only'], note:'Best Asthi Dhatu food of the week.' },
+    snack: { name:'Seed Mix + Amla', items:['Seed mix (palmful)','Amla candy','Pomegranate'], note:'' },
+    dinner: { name:'Moong Dal Soup', items:['Light moong dal','Cumin, turmeric'], note:'' },
+  },
+  Sunday: {
+    breakfast: { name:'Idli + Coconut Chutney', items:['Soft idlis','Coconut chutney'], note:'Full vegetarian rest day.' },
+    lunch: { name:'Rice + Moong Dal + Cooling Vegetable + Mor', items:['Rice + moong dal','Any cooling vegetable','Warm diluted mor'], note:'' },
+    snack: { name:'Fresh fruit only', items:['Pomegranate or pear','Coconut water'], note:'Rest day — system reset.' },
+    dinner: { name:'Ragi Kanji', items:['Thin ragi kanji with cumin'], note:'Lightest dinner of the week.' },
+  },
+};
+
+// ── PRAKRITI ASSESSMENT QUESTIONS ──
+const QUESTIONS = [
+  { text:'How would you describe your body frame?', cat:'Body Type', opts:[
+    {t:'Thin, light, difficult to gain weight',d:'V'},{t:'Medium, athletic, moderate weight',d:'P'},{t:'Larger frame, gains weight easily',d:'K'}]},
+  { text:'How is your skin usually?', cat:'Skin', opts:[
+    {t:'Dry, rough, or cracking — especially in cold',d:'V'},{t:'Warm, sensitive, oily in T-zone, prone to redness',d:'P'},{t:'Smooth, oily, cool to touch',d:'K'}]},
+  { text:'How is your hair naturally?', cat:'Hair', opts:[
+    {t:'Dry, frizzy, brittle — breaks easily',d:'V'},{t:'Fine, oily scalp, prone to early greying',d:'P'},{t:'Thick, lustrous but heavy, prone to oiliness',d:'K'}]},
+  { text:'How do you typically feel about temperature?', cat:'Temperature', opts:[
+    {t:'Dislike cold, always feel cold',d:'V'},{t:'Feel warm easily, dislike heat and sun',d:'P'},{t:'Comfortable in most temperatures, dislike cold and damp',d:'K'}]},
+  { text:'How is your digestion usually?', cat:'Digestion', opts:[
+    {t:'Irregular, prone to gas and bloating',d:'V'},{t:'Strong appetite, acid reflux, stomach sensitive to hot food',d:'P'},{t:'Slow, steady — not very hungry, heavy after meals',d:'K'}]},
+  { text:'How do you sleep?', cat:'Sleep', opts:[
+    {t:'Light, interrupted, difficult to fall asleep',d:'V'},{t:'Moderate — wake if too hot or stressed',d:'P'},{t:'Heavy, deep, love sleeping, hard to wake',d:'K'}]},
+  { text:'How is your energy through the day?', cat:'Energy', opts:[
+    {t:'Comes in bursts, tires easily, variable',d:'V'},{t:'Strong and sustained but crashes under stress',d:'P'},{t:'Slow to start, steady once going, consistent',d:'K'}]},
+  { text:'How do you handle stress?', cat:'Mind', opts:[
+    {t:'Anxious, worried, mind races',d:'V'},{t:'Irritable, intense, perfectionistic',d:'P'},{t:'Calm, slow to react, avoidant',d:'K'}]},
+  { text:'How much mucus or congestion do you typically have?', cat:'Kapha signs', opts:[
+    {t:'Rarely — dry nose and throat',d:'V'},{t:'Occasionally — usually from heat or spice',d:'P'},{t:'Often — especially mornings, blocked nose common',d:'K'}]},
+  { text:'How is your body temperature usually?', cat:'Internal heat', opts:[
+    {t:'Cool, cold hands and feet',d:'V'},{t:'Warm, sometimes hot, sweats easily',d:'P'},{t:'Moderate, cool or normal',d:'K'}]},
+  { text:'How is your appetite?', cat:'Hunger', opts:[
+    {t:'Variable, irregular, forget to eat',d:'V'},{t:'Strong, irritable when hungry, must eat on time',d:'P'},{t:'Moderate, can skip meals without distress',d:'K'}]},
+  { text:'How does your memory work?', cat:'Memory', opts:[
+    {t:'Quick to learn, quick to forget',d:'V'},{t:'Sharp, precise, good recall',d:'P'},{t:'Slow to learn, excellent long-term memory',d:'K'}]},
+  { text:'How is your speech pattern?', cat:'Communication', opts:[
+    {t:'Fast, enthusiastic, jumps topics',d:'V'},{t:'Direct, sharp, articulate',d:'P'},{t:'Slow, measured, calm',d:'K'}]},
+  { text:'How do you feel in the morning?', cat:'Morning state', opts:[
+    {t:'Stiff, dry mouth, anxious until settled',d:'V'},{t:'Alert quickly but irritable if routine broken',d:'P'},{t:'Slow, groggy, need time to start',d:'K'}]},
+  { text:'How are your nails?', cat:'Nails', opts:[
+    {t:'Dry, rough, crack or break easily',d:'V'},{t:'Pink, soft, medium thickness',d:'P'},{t:'Strong, smooth, can be thick and pale',d:'K'}]},
+  { text:'How is your tongue usually?', cat:'Tongue (Jihva Pariksha)', opts:[
+    {t:'Dry, rough, cracked in middle',d:'V'},{t:'Red or pink, sometimes yellowish coating',d:'P'},{t:'Pale, thick white coating especially mornings',d:'K'}]},
+  { text:'How is your weight tendency?', cat:'Weight', opts:[
+    {t:'Difficult to gain, lose easily',d:'V'},{t:'Moderate, gains and loses with moderate effort',d:'P'},{t:'Gains easily, very difficult to lose',d:'K'}]},
+  { text:'How do you feel about exercise?', cat:'Activity', opts:[
+    {t:'Enjoy movement, get tired quickly',d:'V'},{t:'Competitive, push hard, overheat easily',d:'P'},{t:'Prefer light exercise, good endurance',d:'K'}]},
+  { text:'How are your joints?', cat:'Joints', opts:[
+    {t:'Cracking sounds, stiff, dry',d:'V'},{t:'Flexible, warm to touch when inflamed',d:'P'},{t:'Loose, fluid, good mobility',d:'K'}]},
+  { text:'How is your mind naturally?', cat:'Mind quality', opts:[
+    {t:'Creative, imaginative, easily distracted',d:'V'},{t:'Focused, analytical, goal-oriented',d:'P'},{t:'Calm, steady, nurturing, resistant to change',d:'K'}]},
+];
+
+// ── SYMPTOMS ──
+const SYMPTOMS = [
+  { emoji:'🔥', label:'Stomach cramp/heat', dosha:'P', dir:+1 },
+  { emoji:'🤧', label:'Mucus / congestion', dosha:'K', dir:+1 },
+  { emoji:'💨', label:'Gas / bloating', dosha:'V', dir:+1 },
+  { emoji:'😴', label:'Heavy / sluggish', dosha:'K', dir:+1 },
+  { emoji:'😰', label:'Anxious / racing mind', dosha:'V', dir:+1 },
+  { emoji:'😤', label:'Irritable / hot', dosha:'P', dir:+1 },
+  { emoji:'💤', label:'Good sleep', dosha:'K', dir:-1 },
+  { emoji:'⚡', label:'Good energy', dosha:'V', dir:-1 },
+  { emoji:'😌', label:'Calm digestion', dosha:'P', dir:-1 },
+  { emoji:'🌡️', label:'Warm body today', dosha:'P', dir:+1 },
+  { emoji:'🧊', label:'Feeling cold', dosha:'V', dir:+1 },
+  { emoji:'💇', label:'Scalp dry/itchy', dosha:'V', dir:+1 },
+];
+
+// ── KNOWLEDGE BASE ──
+const KNOWLEDGE_HERBS = [
+  { icon:'🍈', title:'Amla (Amalaki) — Rasayana for all doshas', body:`
+    <p><strong>Classical source:</strong> Charaka Samhita, Amalaki Rasayana chapter. Considered the most powerful Rasayana in classical Ayurveda.</p>
+    <p><strong>Tamil:</strong> Nellikai (நெல்லிக்காய்) · <strong>Sanskrit:</strong> Amalaki</p>
+    <p><strong>Key actions:</strong> Simultaneously balances Pitta, Kapha, and Vata. Rich in Vitamin C (remains stable even after cooking). Anti-inflammatory, tissue-building (Dhatu Poshana), excellent for hair (Kesha). CCRAS studies confirm antioxidant and immunomodulatory effects.</p>
+    <p><strong>Your dose:</strong> 1 tsp powder or 2 dried pieces on empty stomach every morning. This is your single most important daily herb.</p>
+  `},
+  { icon:'🌿', title:'Bhringaraj — Kesha Raja (King of Hair)', body:`
+    <p><strong>Classical source:</strong> Nighantu Ratnakar. Called Kesha Raja — literally the king of hair herbs. NIA Jaipur uses it as primary hair treatment herb.</p>
+    <p><strong>Tamil:</strong> Karisalankanni (கரிசலாங்கண்ணி) · <strong>Latin:</strong> Eclipta alba</p>
+    <p><strong>Key actions:</strong> Direct Asthi Dhatu and scalp channel nourishment. Both internal (churna) and external (oil) use. Research published in CCRAS journals confirms promotion of hair follicle activity and reduction of DHT locally.</p>
+    <p><strong>Your dose:</strong> ½ tsp churna in warm water at bedtime. External: mix into coconut oil for scalp massage 3x/week.</p>
+  `},
+  { icon:'🫙', title:'Triphala — Tridoshic detox', body:`
+    <p><strong>Classical source:</strong> Charaka Samhita, Sushruta Samhita. Ministry of AYUSH lists as one of the most researched Ayurvedic formulations.</p>
+    <p><strong>Tamil:</strong> Thirikadugam (திரிகடுகம்) · Three fruits: Amalaki + Bibhitaki + Haritaki</p>
+    <p><strong>Key actions:</strong> Clears Ama (toxins), gently detoxifies, restores microbial balance, improves nutrient absorption. CCRAS clinical studies show efficacy in improving digestion and reducing Ama markers.</p>
+    <p><strong>Your dose:</strong> ½ tsp in warm water at bedtime every 3rd night. Also used as Yoni Prakshalana decoction (vaginal wash).</p>
+  `},
+  { icon:'🌾', title:'Ragi (Finger Millet) — Asthi Dhatu food', body:`
+    <p><strong>Classical source:</strong> Classified under Dhanya (grains) in Charaka Samhita. Highest plant-based calcium of any grain — 344mg per 100g vs rice at 10mg.</p>
+    <p><strong>ICMR (Indian Council of Medical Research) data</strong> confirms ragi as the richest plant source of calcium after dairy, making it exceptional for Asthi Dhatu (bone tissue) from which hair derives.</p>
+    <p><strong>Your use:</strong> Ragi kanji at dinner, ragi kozhukattai at breakfast, ragi ladoo as snack. This is your daily Asthi Dhatu food.</p>
+  `},
+];
+
+const KNOWLEDGE_FOODS = [
+  { icon:'🥥', title:'Foods that balance all three of your doshas', body:`
+    <p>These foods simultaneously cool Pitta, lighten Kapha, and nourish Vata-depleted tissues — safe every day:</p>
+    <table><tr><th>Food</th><th>Tamil</th><th>Primary Action</th></tr>
+    <tr><td>Amla</td><td>Nellikai</td><td>Tridoshic Rasayana</td></tr>
+    <tr><td>Drumstick</td><td>Murungakkai</td><td>Calcium → Asthi Dhatu</td></tr>
+    <tr><td>Ragi</td><td>Kezhvaragu</td><td>Highest plant calcium</td></tr>
+    <tr><td>Ash gourd</td><td>Poosanikai</td><td>Deeply cooling for Pitta</td></tr>
+    <tr><td>Moong dal</td><td>Pasi paruppu</td><td>Lightest dal, tridoshic</td></tr>
+    <tr><td>Coconut water</td><td>Thengai neer</td><td>Electrolytes, Pitta cooling</td></tr>
+    <tr><td>Pomegranate</td><td>Mathalam pazham</td><td>Blood, tissue nourishment</td></tr>
+    </table>
+  `},
+  { icon:'🚫', title:'Foods to reduce for Pitta-Kapha constitution', body:`
+    <p>These foods worsen either your internal heat (Pitta), your congestion (Kapha), or deplete your hair tissue (Vata-Asthi):</p>
+    <table><tr><th>Avoid</th><th>Reason</th></tr>
+    <tr><td>Red chilli, excess pepper</td><td>Directly aggravates Pitta → stomach cramps</td></tr>
+    <tr><td>Coffee, strong tea</td><td>Pitta + blocks iron absorption for hair</td></tr>
+    <tr><td>Cold or refrigerated food</td><td>Creates Ama, worsens Kapha mucus</td></tr>
+    <tr><td>Excess dairy (cold milk)</td><td>Increases Kapha congestion</td></tr>
+    <tr><td>Peanuts, cashews</td><td>Ama-forming, heavy for Kapha Agni</td></tr>
+    <tr><td>Late-night eating (after 7:30 PM)</td><td>Biggest single Ama-builder for your type</td></tr>
+    <tr><td>Fermented food in excess</td><td>Sour taste aggravates Pitta</td></tr>
+    </table>
+  `},
+  { icon:'🌿', title:'Spices safe for Pitta-Kapha', body:`
+    <p>These spices are therapeutic for your constitution — digestive without being heating:</p>
+    <table><tr><th>Spice</th><th>Tamil</th><th>Action</th></tr>
+    <tr><td>Cumin</td><td>Jeeragam</td><td>Digestive, Agni kindler</td></tr>
+    <tr><td>Coriander</td><td>Dhania</td><td>Cooling digestive — best for Pitta</td></tr>
+    <tr><td>Fennel</td><td>Sombu</td><td>Cooling, mucus clearing</td></tr>
+    <tr><td>Turmeric</td><td>Manjal</td><td>Anti-inflammatory, antifungal</td></tr>
+    <tr><td>Cardamom</td><td>Elakkai</td><td>Digestive, cooling</td></tr>
+    </table>
+    <p style="margin-top:8px"><strong>Reduce:</strong> Ginger (heating — small amounts only), black pepper (use minimally), red chilli (avoid).</p>
+  `},
+];
+
+const KNOWLEDGE_DIAGNOSTICS = [
+  { icon:'👁', title:'Body Reading — Darshana Pariksha', body:`
+    <p>Classical Ayurveda taught vaidyas to read the body externally. You can observe these at home:</p>
+    <table><tr><th>What to look at</th><th>Sign</th><th>Dosha / Meaning</th></tr>
+    <tr><td>Nails</td><td>Cracking, breaking</td><td>Vata → calcium/zinc low</td></tr>
+    <tr><td>Nails</td><td>Pale, whitish</td><td>Rasa depletion → iron/B12</td></tr>
+    <tr><td>Tongue</td><td>Thick white coating</td><td>Ama — poor digestion</td></tr>
+    <tr><td>Tongue</td><td>Red or pink</td><td>Pitta excess</td></tr>
+    <tr><td>Tongue</td><td>Pale, thin</td><td>Rasa/Rakta depletion</td></tr>
+    <tr><td>Eyes</td><td>Whitish sclera</td><td>Decreased Pitta → anaemia</td></tr>
+    <tr><td>Skin</td><td>Dry, cracked</td><td>Vata → fat/zinc deficiency</td></tr>
+    <tr><td>Hair</td><td>Tissue-paper brittle</td><td>Asthi Dhatu Kshaya</td></tr>
+    </table>
+  `},
+  { icon:'🫀', title:'Nadi Pariksha — Pulse Diagnosis', body:`
+    <p><strong>Classical source:</strong> Sharngadhara Samhita (13th century CE) — the most detailed classical text on Nadi Pariksha.</p>
+    <p>Nadi (pulse) is felt at the radial artery of the wrist using the index, middle, and ring fingers representing Vata, Pitta, and Kapha respectively.</p>
+    <p><strong>Vata pulse:</strong> Serpentine, irregular, like a snake's movement (Sarpa gati)</p>
+    <p><strong>Pitta pulse:</strong> Jumping, frog-like (Manduka gati)</p>
+    <p><strong>Kapha pulse:</strong> Slow, wave-like, swan (Hamsa gati)</p>
+    <p style="margin-top:8px;color:var(--gold)"><strong>Note:</strong> Reliable Nadi Pariksha requires a trained vaidya's physical touch and cannot be replicated by a phone sensor. This app uses symptom-based assessment which closely parallels what a vaidya observes during a first consultation.</p>
+  `},
+  { icon:'🧬', title:'Dhatu Kshaya — Tissue Depletion Signs', body:`
+    <p><strong>Classical source:</strong> Charaka Samhita Sutrasthana Chapter 17. The 7 Dhatu (tissues) each show specific depletion signs:</p>
+    <table><tr><th>Dhatu</th><th>Signs of depletion</th></tr>
+    <tr><td>Rasa (plasma)</td><td>Fatigue, dull skin, dry mouth</td></tr>
+    <tr><td>Rakta (blood)</td><td>Pale skin, roughness, low lustre</td></tr>
+    <tr><td>Mamsa (muscle)</td><td>Weakness, emaciation</td></tr>
+    <tr><td>Meda (fat)</td><td>Dry joints, cracking sounds</td></tr>
+    <tr><td>Asthi (bone) → Hair</td><td>Brittle hair/nails, joint sounds, tooth sensitivity</td></tr>
+    <tr><td>Majja (marrow)</td><td>Dizziness, bone pain, nerve weakness</td></tr>
+    <tr><td>Shukra (essence)</td><td>Fatigue, low vitality, poor immunity</td></tr>
+    </table>
+  `},
+];
+
+// ── REMINDERS ──
+const DEFAULT_REMINDERS = [
+  { id:'r1', time:'06:00', label:'Wake + Fennel water', icon:'💧', enabled:true },
+  { id:'r2', time:'06:10', label:'Amla Rasayana', icon:'🍈', enabled:true },
+  { id:'r3', time:'07:30', label:'Breakfast time', icon:'🥘', enabled:true },
+  { id:'r4', time:'10:00', label:'Morning snack', icon:'🌱', enabled:true },
+  { id:'r5', time:'12:00', label:'Lunch — main meal', icon:'🍱', enabled:true },
+  { id:'r6', time:'16:00', label:'Evening snack + coconut water', icon:'🍈', enabled:true },
+  { id:'r7', time:'19:00', label:'Dinner — light meal', icon:'🥣', enabled:true },
+  { id:'r8', time:'21:30', label:'Bhringaraj + sleep prep', icon:'🌙', enabled:true },
+];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let state = {
+  constitution: null, // 'PK','VP','VK' etc
+  doshas: { P: 45, K: 35, V: 20 }, // percentages
+  routineDone: {},
+  symptoms: [],
+  log: [], // array of { date, symptoms, doshas }
+  reminders: DEFAULT_REMINDERS,
+  assessmentAnswers: {},
+  currentQ: 0,
+  selectedDay: new Date().getDay(),
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('vaidya_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('vaidya_state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const screen = document.getElementById(`screen-${name}`);
+  if (screen) screen.classList.add('active');
+  const navBtn = document.querySelector(`[data-screen="${name}"]`);
+  if (navBtn) navBtn.classList.add('active');
+  if (name === 'meals') renderMeals();
+  if (name === 'tracker') renderTracker();
+  if (name === 'knowledge') renderKnowledge();
+  if (name === 'settings') renderSettings();
+}
+
+// ═══════════════════════════════════════════════════════
+// CLOCK & GREETING
+// ═══════════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes().toString().padStart(2,'0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  document.getElementById('clock').textContent = `${h12}:${m} ${ampm}`;
+  const dayName = DAYS[now.getDay()];
+  const dateStr = now.toLocaleDateString('en-AU', {day:'numeric', month:'short'});
+  document.getElementById('date-display').textContent = `${dayName}, ${dateStr}`;
+
+  let greeting = 'Good morning';
+  let phase = 'Morning Routine';
+  let phaseSub = 'Begin with fennel water and amla to set your dosha balance.';
+  let icon = '🌅';
+
+  if (h < 6) { greeting = 'Brahma Muhurta'; phase = 'Pre-dawn practice'; phaseSub = 'Ideal time for meditation and light yoga before the day begins.'; icon = '🌙'; }
+  else if (h < 10) { greeting = 'Good morning'; phase = 'Morning Routine'; phaseSub = 'Kapha hour — complete your Dinacharya and eat a light breakfast.'; icon = '🌅'; }
+  else if (h < 14) { greeting = 'Good afternoon'; phase = 'Pitta Hour — Peak Agni'; phaseSub = 'Strongest digestion now. Make lunch your main nourishing meal.'; icon = '☀️'; }
+  else if (h < 18) { greeting = 'Good afternoon'; phase = 'Vata Hour'; phaseSub = 'Light snack and CCF tea. Creative energy — good time for focused work.'; icon = '🌤'; }
+  else if (h < 22) { greeting = 'Good evening'; phase = 'Wind Down — Kapha returns'; phaseSub = 'Light early dinner by 7:30 PM. Bhringaraj at 9:30. Sleep by 10 PM.'; icon = '🌙'; }
+  else { greeting = 'Time to sleep'; phase = 'Pitta hour restarts'; phaseSub = 'Staying up past 10 PM overheats the system. Rest now.'; icon = '😴'; }
+
+  document.getElementById('home-greeting').textContent = greeting;
+  document.getElementById('hero-greeting-text').textContent = `${icon} ${dayName}'s plan is ready`;
+  document.getElementById('hero-phase-title').textContent = phase;
+  document.getElementById('hero-phase-sub').textContent = phaseSub;
+
+  updateNextAction(h, m);
+  checkReminders(h, now.getMinutes());
+}
+
+function updateNextAction(h, m) {
+  const upcoming = ROUTINE.find(r => {
+    const [rh, rm] = r.time.replace(' AM','').replace(' PM','').split(':').map(Number);
+    const rH = r.time.includes('PM') && rh !== 12 ? rh + 12 : (r.time.includes('AM') && rh === 12 ? 0 : rh);
+    return rH > h || (rH === h && Number(m) < rm);
+  });
+  if (upcoming) {
+    document.getElementById('next-action-icon').textContent = upcoming.icon;
+    document.getElementById('next-action-title').textContent = `Next: ${upcoming.title}`;
+    document.getElementById('next-action-desc').textContent = upcoming.desc;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// HOME SCREEN RENDER
+// ═══════════════════════════════════════════════════════
+function renderHome() {
+  // Constitution pills
+  const pillsEl = document.getElementById('constitution-pills');
+  if (state.constitution) {
+    const map = { P:'Pitta', K:'Kapha', V:'Vata' };
+    pillsEl.innerHTML = state.constitution.split('').map(d =>
+      `<span class="pill pill-${d.toLowerCase()}">${map[d]}</span>`
+    ).join('') + `<span class="pill pill-g">+ Vata Hair</span>`;
+  } else {
+    pillsEl.innerHTML = `<span class="pill" style="background:var(--gold-dim);color:var(--gold2);cursor:pointer" onclick="startAssessment()">+ Take Prakriti Assessment</span>`;
+  }
+
+  // Dosha bars
+  updateDoshaBars();
+
+  // Routine list
+  renderRoutineList();
+}
+
+function updateDoshaBars() {
+  const { P, K, V } = state.doshas;
+  document.getElementById('pitta-bar').style.width = P + '%';
+  document.getElementById('kapha-bar').style.width = K + '%';
+  document.getElementById('vata-bar').style.width = V + '%';
+  document.getElementById('pitta-pct').textContent = P + '%';
+  document.getElementById('kapha-pct').textContent = K + '%';
+  document.getElementById('vata-pct').textContent = V + '%';
+}
+
+function renderRoutineList() {
+  const today = new Date().toDateString();
+  const done = state.routineDone[today] || [];
+  const h = new Date().getHours();
+
+  const html = ROUTINE.map((r, i) => {
+    const isDone = done.includes(i);
+    const [rh] = r.time.replace(' AM','').replace(' PM','').split(':').map(Number);
+    const rH = r.time.includes('PM') && rh !== 12 ? rh + 12 : rh;
+    const isActive = !isDone && (rH <= h && rH >= h - 2);
+
+    return `<div class="routine-item ${isDone ? 'done' : ''}" onclick="toggleRoutine(${i})">
+      <div class="routine-time">${r.time}</div>
+      <div class="routine-dot ${isDone ? 'done-dot' : isActive ? 'active-dot' : 'pending-dot'}"></div>
+      <div class="routine-body">
+        <div class="routine-title">${r.icon} ${r.title}</div>
+        <div class="routine-desc">${r.desc}</div>
+      </div>
+      <div class="routine-check ${isDone ? 'checked' : ''}">${isDone ? '✓' : ''}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('routine-list').innerHTML = html;
+}
+
+function toggleRoutine(idx) {
+  const today = new Date().toDateString();
+  if (!state.routineDone[today]) state.routineDone[today] = [];
+  const arr = state.routineDone[today];
+  const pos = arr.indexOf(idx);
+  if (pos === -1) arr.push(idx); else arr.splice(pos, 1);
+  saveState();
+  renderRoutineList();
+}
+
+// ═══════════════════════════════════════════════════════
+// MEALS SCREEN
+// ═══════════════════════════════════════════════════════
+function renderMeals() {
+  const todayIdx = new Date().getDay();
+  // Day nav
+  const navHtml = DAYS.map((d, i) =>
+    `<div class="day-chip ${state.selectedDay === i ? 'active' : ''}" onclick="selectDay(${i})">${SHORT_DAYS[i]}</div>`
+  ).join('');
+  document.getElementById('meal-day-nav').innerHTML = navHtml;
+  renderDayMeals();
+}
+
+function selectDay(idx) {
+  state.selectedDay = idx;
+  renderMeals();
+}
+
+function renderDayMeals() {
+  const day = DAYS[state.selectedDay];
+  const plan = MEALS[day];
+  if (!plan) return;
+
+  const mealTypes = [
+    { key:'breakfast', label:'7:30 AM · Breakfast', color:'var(--gold)' },
+    { key:'lunch', label:'12:00 PM · Lunch', color:'var(--leaf)' },
+    { key:'snack', label:'4:00 PM · Snack', color:'var(--copper)' },
+    { key:'dinner', label:'7:00 PM · Dinner', color:'var(--kapha)' },
+  ];
+
+  const html = mealTypes.map(mt => {
+    const meal = plan[mt.key];
+    if (!meal) return '';
+    return `<div class="meal-card">
+      <div class="meal-header">
+        <div class="meal-time-label">${mt.label}</div>
+      </div>
+      <div class="meal-name">${meal.name}</div>
+      <ul class="meal-items">${meal.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      ${meal.note ? `<div class="meal-note">💡 ${meal.note}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('meal-content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+// TRACKER SCREEN
+// ═══════════════════════════════════════════════════════
+function renderTracker() {
+  const today = new Date().toDateString();
+  const done = state.routineDone[today] || [];
+  const doneCount = done.length;
+
+  document.getElementById('tracker-stats').innerHTML = `
+    <div class="tracker-card">
+      <span class="tracker-icon">✅</span>
+      <div class="tracker-label">Routine done</div>
+      <div class="tracker-value">${doneCount}<span class="tracker-unit">/${ROUTINE.length}</span></div>
+    </div>
+    <div class="tracker-card">
+      <span class="tracker-icon">🔥</span>
+      <div class="tracker-label">Pitta level</div>
+      <div class="tracker-value">${state.doshas.P}<span class="tracker-unit">%</span></div>
+    </div>
+    <div class="tracker-card">
+      <span class="tracker-icon">💧</span>
+      <div class="tracker-label">Kapha level</div>
+      <div class="tracker-value">${state.doshas.K}<span class="tracker-unit">%</span></div>
+    </div>
+    <div class="tracker-card">
+      <span class="tracker-icon">💨</span>
+      <div class="tracker-label">Vata level</div>
+      <div class="tracker-value">${state.doshas.V}<span class="tracker-unit">%</span></div>
+    </div>
+  `;
+
+  document.getElementById('log-buttons').innerHTML = `
+    <div class="log-btn" onclick="openSymptomLog()">
+      <div class="log-btn-icon">🩺</div>
+      <div class="log-btn-text">
+        <div class="log-btn-title">Log symptoms & feelings</div>
+        <div class="log-btn-sub">Updates your dosha balance</div>
+      </div>
+      <div class="log-btn-arrow">→</div>
+    </div>
+    <div class="log-btn" onclick="startAssessment()">
+      <div class="log-btn-icon">📋</div>
+      <div class="log-btn-text">
+        <div class="log-btn-title">Retake Prakriti assessment</div>
+        <div class="log-btn-sub">Full 20-question evaluation</div>
+      </div>
+      <div class="log-btn-arrow">→</div>
+    </div>
+  `;
+
+  // Trend
+  const recent = state.log.slice(-7);
+  if (recent.length === 0) {
+    document.getElementById('trend-display').innerHTML = `<p style="font-size:12px;color:var(--text3);text-align:center;padding:8px 0">Log your symptoms daily to see your 7-day dosha trend here.</p>`;
+  } else {
+    const html = recent.map(entry => {
+      const d = new Date(entry.date);
+      return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <div style="width:36px;font-size:11px;color:var(--text3)">${SHORT_DAYS[d.getDay()]}</div>
+        <div style="flex:1;display:flex;gap:4px;align-items:center">
+          <div style="flex:${entry.doshas.P};height:6px;background:var(--pitta);border-radius:2px;min-width:4px"></div>
+          <div style="flex:${entry.doshas.K};height:6px;background:var(--kapha);border-radius:2px;min-width:4px"></div>
+          <div style="flex:${entry.doshas.V};height:6px;background:var(--vata);border-radius:2px;min-width:4px"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">P${entry.doshas.P} K${entry.doshas.K} V${entry.doshas.V}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('trend-display').innerHTML = html +
+      `<div style="display:flex;gap:12px;margin-top:10px;font-size:10px"><span style="color:var(--pitta)">■ Pitta</span><span style="color:var(--kapha)">■ Kapha</span><span style="color:var(--vata)">■ Vata</span></div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// SYMPTOM LOG MODAL
+// ═══════════════════════════════════════════════════════
+function openSymptomLog() {
+  const grid = document.getElementById('symptom-grid');
+  grid.innerHTML = SYMPTOMS.map((s, i) =>
+    `<div class="symptom-chip ${state.symptoms.includes(i) ? 'selected' : ''}" onclick="toggleSymptom(${i})">
+      <span>${s.emoji}</span> ${s.label}
+    </div>`
+  ).join('');
+  document.getElementById('symptomModal').classList.add('open');
+}
+
+function toggleSymptom(idx) {
+  const pos = state.symptoms.indexOf(idx);
+  if (pos === -1) state.symptoms.push(idx); else state.symptoms.splice(pos, 1);
+  document.querySelectorAll('.symptom-chip').forEach((el, i) => {
+    el.classList.toggle('selected', state.symptoms.includes(i));
+  });
+}
+
+function saveSymptoms() {
+  // Adjust doshas based on symptoms
+  let { P, K, V } = state.doshas;
+  state.symptoms.forEach(idx => {
+    const s = SYMPTOMS[idx];
+    if (s.dosha === 'P') P = Math.min(80, Math.max(10, P + s.dir * 5));
+    if (s.dosha === 'K') K = Math.min(80, Math.max(10, K + s.dir * 5));
+    if (s.dosha === 'V') V = Math.min(80, Math.max(10, V + s.dir * 5));
+  });
+  // Normalise to ~100
+  const total = P + K + V;
+  state.doshas = {
+    P: Math.round(P / total * 100),
+    K: Math.round(K / total * 100),
+    V: Math.round(V / total * 100),
+  };
+  // Log entry
+  state.log.push({ date: new Date().toDateString(), doshas: { ...state.doshas }, symptoms: [...state.symptoms] });
+  state.symptoms = [];
+  saveState();
+  closeSymptomModal();
+  updateDoshaBars();
+  showNotif('📊', 'Dosha updated', 'Your balance has been recalculated based on today\'s symptoms.');
+}
+
+function closeSymptomModal(e) {
+  if (!e || e.target === document.getElementById('symptomModal')) {
+    document.getElementById('symptomModal').classList.remove('open');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// KNOWLEDGE SCREEN
+// ═══════════════════════════════════════════════════════
+function renderKnowledge() {
+  renderKnowSection('knowledge-herbs', KNOWLEDGE_HERBS);
+  renderKnowSection('knowledge-foods', KNOWLEDGE_FOODS);
+  renderKnowSection('knowledge-diagnostics', KNOWLEDGE_DIAGNOSTICS);
+}
+
+function renderKnowSection(elId, items) {
+  document.getElementById(elId).innerHTML = items.map((item, i) =>
+    `<div class="know-item" id="ki-${elId}-${i}">
+      <div class="know-item-header" onclick="toggleKnow('ki-${elId}-${i}')">
+        <span class="know-icon">${item.icon}</span>
+        <span class="know-title">${item.title}</span>
+        <span class="know-arrow">▼</span>
+      </div>
+      <div class="know-body">${item.body}</div>
+    </div>`
+  ).join('');
+}
+
+function toggleKnow(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════
+function renderSettings() {
+  const rHtml = state.reminders.map((r, i) =>
+    `<div class="settings-item">
+      <div class="settings-icon">${r.icon}</div>
+      <div class="settings-label">${r.label}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="settings-value">${formatTime12(r.time)}</div>
+        <div class="toggle ${r.enabled ? 'on' : ''}" onclick="toggleReminder(${i})"></div>
+      </div>
+    </div>`
+  ).join('');
+  document.getElementById('reminder-settings').innerHTML = rHtml;
+  const c = state.constitution;
+  document.getElementById('settings-constitution').textContent = c ?
+    c.split('').map(d=>({P:'Pitta',K:'Kapha',V:'Vata'}[d])).join('-') : 'Not assessed';
+}
+
+function toggleReminder(idx) {
+  state.reminders[idx].enabled = !state.reminders[idx].enabled;
+  saveState();
+  renderSettings();
+}
+
+function formatTime12(t) {
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  return `${h % 12 || 12}:${m.toString().padStart(2,'0')} ${ampm}`;
+}
+
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'vaidya-data.json'; a.click();
+}
+
+function clearData() {
+  if (confirm('Clear all data? This cannot be undone.')) {
+    localStorage.removeItem('vaidya_state');
+    location.reload();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// PRAKRITI ASSESSMENT
+// ═══════════════════════════════════════════════════════
+function startAssessment() {
+  state.currentQ = 0;
+  state.assessmentAnswers = {};
+  showScreen('assessment');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[state.currentQ];
+  const total = QUESTIONS.length;
+  document.getElementById('assessment-subtitle').textContent = `Question ${state.currentQ + 1} of ${total}`;
+  document.getElementById('q-number').textContent = `Question ${state.currentQ + 1} of ${total}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-category').textContent = q.cat;
+  document.getElementById('assessment-progress-fill').style.width = ((state.currentQ / total) * 100) + '%';
+
+  const letters = ['A','B','C'];
+  document.getElementById('q-options').innerHTML = q.opts.map((o, i) =>
+    `<div class="q-option ${state.assessmentAnswers[state.currentQ] === i ? 'selected' : ''}" onclick="selectOption(${i})">
+      <div class="q-option-letter">${letters[i]}</div>
+      <div class="q-option-text">${o.t}</div>
+    </div>`
+  ).join('');
+
+  document.getElementById('q-next-btn').disabled = state.assessmentAnswers[state.currentQ] === undefined;
+  document.getElementById('q-next-btn').textContent = state.currentQ === total - 1 ? 'See Results →' : 'Next →';
+}
+
+function selectOption(idx) {
+  state.assessmentAnswers[state.currentQ] = idx;
+  document.querySelectorAll('.q-option').forEach((el, i) => el.classList.toggle('selected', i === idx));
+  document.getElementById('q-next-btn').disabled = false;
+}
+
+function assessNext() {
+  if (state.currentQ < QUESTIONS.length - 1) {
+    state.currentQ++;
+    renderQuestion();
+  } else {
+    computeResult();
+  }
+}
+
+function assessPrev() {
+  if (state.currentQ > 0) { state.currentQ--; renderQuestion(); }
+  else showScreen('settings');
+}
+
+function computeResult() {
+  const counts = { V:0, P:0, K:0 };
+  Object.entries(state.assessmentAnswers).forEach(([qi, oi]) => {
+    const dosha = QUESTIONS[parseInt(qi)].opts[oi].d;
+    counts[dosha]++;
+  });
+  const total = Object.values(counts).reduce((a,b) => a+b, 0);
+  const pcts = {
+    P: Math.round(counts.P / total * 100),
+    K: Math.round(counts.K / total * 100),
+    V: Math.round(counts.V / total * 100),
+  };
+
+  // Determine primary constitution
+  const sorted = Object.entries(pcts).sort((a,b) => b[1]-a[1]);
+  const primary = sorted[0][0];
+  const secondary = sorted[1][0];
+  const constitution = sorted[1][1] > 25 ? primary + secondary : primary;
+
+  // Render result
+  const constitutionNames = { P:'Pitta', K:'Kapha', V:'Vata', PK:'Pitta-Kapha', VP:'Vata-Pitta', VK:'Vata-Kapha', PV:'Pitta-Vata', KP:'Kapha-Pitta', KV:'Kapha-Vata' };
+  const constitutionDescs = {
+    PK:'Strong digestive fire with tendency to accumulate. Warm body, good endurance, prone to heat-related issues and congestion. Needs cooling, light diet.',
+    KP:'Same as Pitta-Kapha — emphasis on digestion and weight management.',
+    VP:'Quick, creative, intense. Light body with sharp mind. Prone to dryness and acidity. Needs nourishing, warming-but-cooling foods.',
+    PV:'Quick, creative, intense. Light body with sharp mind. Prone to dryness and acidity. Needs nourishing, warming-but-cooling foods.',
+    VK:'Slow and variable. Prone to congestion and irregular digestion. Needs warming, lighter foods.',
+    KV:'Slow and variable. Prone to congestion and irregular digestion. Needs warming, lighter foods.',
+    P:'Fiery, sharp, intense. Strong digestion, warm body. Prone to inflammation and acidity. Needs cooling diet.',
+    K:'Steady, strong, calm. Prone to congestion and weight gain. Needs light, stimulating diet.',
+    V:'Creative, light, variable. Prone to dryness and anxiety. Needs nourishing, grounding diet.',
+  };
+
+  document.getElementById('result-constitution').textContent = constitutionNames[constitution] || constitution;
+  document.getElementById('result-sub').textContent = constitutionDescs[constitution] || 'A unique combination of qualities. Personalised guidance appears in your dashboard.';
+
+  document.getElementById('result-bars').innerHTML = `
+    <div class="dosha-bar-row">
+      <div class="dosha-label" style="color:var(--pitta)">Pitta</div>
+      <div class="dosha-track"><div class="dosha-fill fill-p" style="width:${pcts.P}%"></div></div>
+      <div class="dosha-pct">${pcts.P}%</div>
+    </div>
+    <div class="dosha-bar-row">
+      <div class="dosha-label" style="color:var(--kapha)">Kapha</div>
+      <div class="dosha-track"><div class="dosha-fill fill-k" style="width:${pcts.K}%"></div></div>
+      <div class="dosha-pct">${pcts.K}%</div>
+    </div>
+    <div class="dosha-bar-row">
+      <div class="dosha-label" style="color:var(--vata)">Vata</div>
+      <div class="dosha-track"><div class="dosha-fill fill-v" style="width:${pcts.V}%"></div></div>
+      <div class="dosha-pct">${pcts.V}%</div>
+    </div>
+  `;
+
+  document.getElementById('result-recs').innerHTML = `
+    <div class="card-inner">
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Based on your assessment, your personalised meal plan, daily routine, and dosha tracking have been updated. Your dashboard will now reflect recommendations specific to your <strong style="color:var(--gold2)">${constitutionNames[constitution] || constitution}</strong> constitution.</p>
+    </div>
+  `;
+
+  // Store temporarily for save
+  state._pendingResult = { constitution, doshas: pcts };
+  showScreen('result');
+}
+
+function saveAssessmentResult() {
+  if (state._pendingResult) {
+    state.constitution = state._pendingResult.constitution;
+    state.doshas = state._pendingResult.doshas;
+    delete state._pendingResult;
+    saveState();
+  }
+  showScreen('home');
+  renderHome();
+}
+
+// ═══════════════════════════════════════════════════════
+// IN-APP NOTIFICATIONS (local only)
+// ═══════════════════════════════════════════════════════
+let notifTimeout;
+
+function showNotif(icon, title, desc) {
+  document.getElementById('notifIcon').textContent = icon;
+  document.getElementById('notifTitle').textContent = title;
+  document.getElementById('notifDesc').textContent = desc;
+  document.getElementById('notifBanner').classList.add('show');
+  clearTimeout(notifTimeout);
+  notifTimeout = setTimeout(closeNotif, 5000);
+}
+
+function closeNotif() {
+  document.getElementById('notifBanner').classList.remove('show');
+}
+
+let lastNotifMinute = -1;
+function checkReminders(h, m) {
+  if (m === lastNotifMinute) return;
+  const timeStr = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+  state.reminders.forEach(r => {
+    if (r.enabled && r.time === timeStr) {
+      showNotif(r.icon, r.label, 'Tap to mark as done in your Dinacharya.');
+      lastNotifMinute = m;
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+loadState();
+
+// Set default constitution if not assessed yet
+if (!state.constitution) {
+  state.constitution = 'PK';
+  state.doshas = { P: 45, K: 35, V: 20 };
+}
+
+updateClock();
+setInterval(updateClock, 15000);
+renderHome();
+
+// Show assessment prompt on first launch
+setTimeout(() => {
+  showNotif('🪷', 'Welcome to Vaidya', 'Take the Prakriti assessment to personalise your dashboard.');
+}, 1500);
+
+// Register service worker for offline use
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

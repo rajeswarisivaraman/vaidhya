@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaidya — Install Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  body { background:#1A2E1B; color:#F0EAD8; font-family:'DM Sans',sans-serif; font-weight:300; max-width:600px; margin:0 auto; padding:32px 20px 60px; line-height:1.7; }
+  h1 { font-family:'Cormorant',serif; font-size:36px; font-weight:600; color:#E8C060; margin-bottom:6px; }
+  h1 em { font-style:italic; }
+  .sub { font-size:13px; color:#706858; margin-bottom:40px; }
+  h2 { font-family:'Cormorant',serif; font-size:22px; font-weight:600; color:#F0EAD8; margin:28px 0 12px; }
+  .step { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px 20px; margin-bottom:10px; display:flex; gap:14px; align-items:flex-start; }
+  .step-num { width:28px; height:28px; border-radius:50%; background:#C8922A; color:#1A2E1B; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; margin-top:1px; }
+  .step-text { flex:1; font-size:13.5px; color:#B8B098; }
+  .step-text strong { color:#F0EAD8; font-weight:500; }
+  .privacy-box { background:rgba(90,154,92,0.1); border:1px solid rgba(90,154,92,0.25); border-radius:12px; padding:18px 20px; margin:28px 0; }
+  .privacy-box h3 { font-size:14px; font-weight:600; color:#8FBC92; margin-bottom:8px; }
+  .privacy-box p { font-size:12.5px; color:#7A9E7A; line-height:1.65; }
+  .note { font-size:11.5px; color:#4A6A4C; font-style:italic; margin-top:8px; }
+  .open-btn { display:block; background:#C8922A; color:#1A2E1B; text-decoration:none; text-align:center; padding:16px; border-radius:12px; font-weight:700; font-size:15px; margin:32px 0 16px; }
+</style>
+</head>
+<body>
+<h1>Vaidya <em>✦</em></h1>
+<div class="sub">Your personal Ayurvedic daily companion</div>
+
+<div class="privacy-box">
+  <h3>🔒 100% Private — Nothing leaves your phone</h3>
+  <p>All your health data is stored only in your browser's local storage on your device. No server. No account. No internet required after first load. Your dosha data, symptom logs, and meal tracking never leave your network.</p>
+</div>
+
+<a class="open-btn" href="index.html">Open Vaidya App →</a>
+
+<h2>📱 Install on Android (Chrome)</h2>
+<div class="step"><div class="step-num">1</div><div class="step-text">Open <strong>index.html</strong> in Chrome on your Android phone (you can copy it to your phone and open in Chrome, or host locally)</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-text">Tap the <strong>three dots menu (⋮)</strong> in the top right of Chrome</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-text">Tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></div></div>
+<div class="step"><div class="step-num">4</div><div class="step-text">Tap <strong>"Add"</strong> when prompted. The app icon will appear on your home screen.</div></div>
+<div class="step"><div class="step-num">5</div><div class="step-text">Open from home screen — it now runs <strong>fullscreen like a native app</strong>, no browser bar visible.</div></div>
+
+<h2>💻 Simplest local hosting option</h2>
+<div class="step"><div class="step-num">1</div><div class="step-text">If you have Python installed: open terminal in the app folder and run <strong>python3 -m http.server 8080</strong></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-text">On your phone (same WiFi), open Chrome and go to <strong>http://[your-computer-ip]:8080</strong></div></div>
+<div class="step"><div class="step-num">3</div><div class="step-text">Install from Chrome as above. The app caches itself for <strong>fully offline use</strong> after first load.</div></div>
+
+<h2>What's inside</h2>
+<div class="step"><div class="step-num">🏠</div><div class="step-text"><strong>Home:</strong> Live dosha balance, today's Dinacharya checklist, next action reminder, phase of day guidance</div></div>
+<div class="step"><div class="step-num">🍱</div><div class="step-text"><strong>Meals:</strong> Full 7-day South Indian meal plan with breakfast, lunch, snack, and dinner for your Pitta-Kapha constitution</div></div>
+<div class="step"><div class="step-num">📊</div><div class="step-text"><strong>Tracker:</strong> Daily symptom logging, 7-day dosha trend chart, routine completion stats</div></div>
+<div class="step"><div class="step-num">📖</div><div class="step-text"><strong>Knowledge:</strong> Herbs (CCRAS/NIA sourced), food guides, classical diagnostics, Dhatu framework</div></div>
+<div class="step"><div class="step-num">📋</div><div class="step-text"><strong>Prakriti Assessment:</strong> 20-question classical evaluation (AYUSH Ministry standard) to determine your constitution</div></div>
+<div class="step"><div class="step-num">⚙️</div><div class="step-text"><strong>Settings:</strong> Toggle individual reminders, export your data as JSON, retake assessment</div></div>
+
+<p class="note">Vaidya is a wellness companion based on classical Ayurvedic knowledge. For medical conditions, consult a qualified vaidya or physician. Knowledge sourced from Charaka Samhita, Sushruta Samhita, Ashtanga Hridaya, Bhaishajya Ratnavali, Ministry of AYUSH, CCRAS, and NIA Jaipur.</p>
+</body>
+</html>
